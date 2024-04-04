@@ -1,7 +1,3 @@
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -9,8 +5,12 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
 import static java.lang.Thread.sleep;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfWriter;
 
 public class CanvasWindow extends JFrame {
 
@@ -225,8 +225,7 @@ public class CanvasWindow extends JFrame {
                 if (result == JFileChooser.APPROVE_OPTION) {
                     System.out.println("aaa");
                     file = saveCanvasState.getSelectedFile();
-                    System.out.println(file.getAbsolutePath());
-                    fileSave(file);
+                    fileSave(file.getAbsolutePath());
                 }
             }
         });
@@ -235,41 +234,20 @@ public class CanvasWindow extends JFrame {
 
     }
 
-    //TODO apache2PDF canvas converter
-    private void fileSave(File f){
+    //TODO iTextCore-8 PDF Conversion
+    private void fileSave(String path){
+        Document document = new Document(PageSize.A4, 50, 50, 50, 50);
         try {
-            BufferedImage bufferedImage = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_RGB);
-            Graphics2D g = bufferedImage.createGraphics();
-            canvas.printAll(g);
-            g.dispose();
-
-            ImageIO.write(bufferedImage, "PNG", new File("bomoge.png"));
-
-            PDDocument document = new PDDocument();
-            PDPage page = new PDPage(new PDRectangle(canvas.getWidth(),canvas.getHeight()));
-            System.out.println(page);
-            document.addPage(page);
-            /*
-            PDImageXObject image = LosslessFactory.createFromImage(document, bufferedImage);
-
-            PDPageContentStream pdpcs = new PDPageContentStream(document, page);
-            pdpcs.drawImage(image,0,0);
-            */
-            /*
-            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                contentStream.drawImage(org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject.createFromByteArray(document, toByteArray(bufferedImage), "image"), 0, 0);
-            }
-            */
-
-
-
-            document.save(f);
-
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(path));
+            document.open();
+            PdfContentByte contentByte = writer.getDirectContent();
+            PdfGraphics2D graphics2d = new PdfGraphics2D(contentByte, PageSize.A4.getWidth(), PageSize.A4.getHeight());
+            component.print(graphics2d);
+            graphics2d.dispose();
+        } catch (DocumentException | FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
             document.close();
-
-        }
-        catch (Exception e){
-            System.out.println("----------------------------------------");
         }
     }
 
