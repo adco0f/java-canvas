@@ -242,7 +242,7 @@ public class CanvasWindow extends JFrame {
             document.open();
             PdfContentByte contentByte = writer.getDirectContent();
             PdfGraphics2D graphics2d = new PdfGraphics2D(contentByte, PageSize.A4.getWidth(), PageSize.A4.getHeight());
-            component.print(graphics2d);
+            canvas.print(graphics2d);
             graphics2d.dispose();
         } catch (DocumentException | FileNotFoundException e) {
             e.printStackTrace();
